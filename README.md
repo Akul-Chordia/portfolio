@@ -1,2 +1,0 @@
-# akul.github.io
-website
