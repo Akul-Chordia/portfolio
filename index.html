@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akul Chordia - Web Portfolio (ImGui Theme)</title>
+    <!-- Importing 'Roboto Mono' as a fallback font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* @font-face rule to load your local font file */
+        @font-face {
+            font-family: 'ProggyClean';
+            /* This tells the browser to look for the font file in the same folder */
+            src: url('ProggyClean.ttf') format('truetype');
+            /* These settings help it render sharply like a bitmap font */
+            font-weight: normal;
+            font-style: normal;
+            font-synthesis: none;
+        }
+
+        /* --- Base Styling --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Split html and body rules */
+        html {
+            /* Font size is now on HTML element, default 16px */
+            font-size: 16px; 
+        }
+
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Will be overridden on mobile */
+            /* main background color (this is now a fallback) */
+            background-color: rgb(51, 51, 51); 
+            color: #E0E0E0; /* Default light text */
+            /* Updated font stack */
+            font-family: 'ProggyClean', 'Roboto Mono', 'Courier New', 'Bitstream Vera Sans Mono', monospace;
+            line-height: 1.4;
+            
+            /* Force crisp pixel rendering */
+            image-rendering: -moz-crisp-edges; /* Firefox */
+            image-rendering: pixelated; /* Modern browsers */
+            
+            /* Disable font smoothing for a sharper, bitmap-like look */
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: grayscale;
+            font-smooth: never;
+            
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 12px; 
+            height: 12px; 
+        }
+        ::-webkit-scrollbar-track {
+            /* Use window background color */
+            background: rgb(17, 17, 17);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            /* Use window background color for border */
+            border: 3px solid rgb(17, 17, 17); 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+        ::-webkit-scrollbar-corner {
+            background: rgb(51, 51, 51);
+        }
+        
+        /* --- Window Container for Scaling --- */
+        #window-container {
+            width: 100%;
+            height: 100%;
+            /* Removed transform-origin, added position */
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: transform 0.1s; /* Smooths scale reset */
+        }
+
+        /* --- ImGui Window Structure --- */
+        .imgui-window {
+            position: absolute;
+            /* individual window background */
+            background-color: rgb(17, 17, 17); 
+            border: 1px solid #353535; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            min-width: 280px; 
+            min-height: 180px; 
+            display: grid;
+            grid-template-rows: auto 1fr;
+            overflow: hidden;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        /* --- Window Title Bar --- */
+        .imgui-title-bar {
+            padding: 4px 8px; 
+            /* title black (not selected) */
+            background-color: rgb(10, 10, 10); 
+            color: #E0E0E0;
+            font-weight: 700; 
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid #000; /* Darker border */
+            transition: background-color 0.2s, color 0.2s, border-color 0.1s;
+            /* Use flex to position title and collapse button */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Active Window Title Bar */
+        .imgui-window.active > .imgui-title-bar {
+            /* title bar blue (when window selected) */
+            background-color: rgb(41, 74, 122); 
+        }
+
+        /* Collapse Button */
+        .window-collapse-btn {
+            font-size: 0.9em; /* Match summary arrow */
+            font-weight: 700;
+            padding: 0 5px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: transform 0.1s linear, background-color 0.1s;
+            transform: rotate(90deg); /* Start open (rotated) */
+            margin-right: 6px; 
+        }
+        .window-collapse-btn:hover {
+            background-color: rgb(56, 123, 203);
+        }
+
+        /* Collapsed Window Styling */
+        .imgui-window.collapsed {
+            height: auto !important; /* Override inline style */
+            /* Make window box disappear */
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            min-height: 0;
+            min-width: 0; /* Let title bar define width */
+        }
+        .imgui-window.collapsed > .imgui-content,
+        .imgui-window.collapsed > .imgui-resize-handle {
+            display: none; /* Hide content and resizer */
+        }
+        .imgui-window.collapsed > .imgui-title-bar {
+            background-color: rgb(25, 25, 25); /* Collapsed color */
+            border: 1px solid #353535; /* Add border to bar */
+        }
+        /* Collapsed and active (collapsed color wins) */
+        .imgui-window.collapsed.active > .imgui-title-bar {
+             background-color: rgb(25, 25, 25); /* Collapsed color */
+        }
+        
+        /* Rotate button when collapsed */
+        .imgui-window.collapsed .window-collapse-btn {
+            transform: rotate(0deg); /* Point right when collapsed */
+        }
+
+
+        /* --- Window Content Area --- */
+        .imgui-content {
+            padding: 10px; 
+            overflow-y: auto;
+            /* individual window background */
+            background-color: rgb(17, 17, 17); 
+            transition: background-color 0.2s;
+        }
+
+        /* --- Resize Handle (Bottom-Right Corner) --- */
+        .imgui-resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15px; 
+            height: 15px; 
+            cursor: se-resize;
+            /* Updated background to match window */
+            background:
+                linear-gradient(135deg, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 60%, #777 60%, #777 65%, transparent 65%),
+                linear-gradient(135deg, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 75%, #777 75%, #777 80%, transparent 80%),
+                linear-gradient(135deg, rgb(17, 17, 17) 0%, rgb(17, 17, 17) 90%, #777 90%, #777 95%, transparent 95%);
+            opacity: 0.9;
+            transition: background 0.2s;
+        }
+
+        /* --- Content Styling (Separators, Lists, etc.) --- */
+        hr {
+            border: 0;
+            border-top: 1px solid #353535;
+            margin: 10px 0; 
+            transition: border-color 0.2s;
+        }
+        
+        ul {
+            list-style: none;
+            padding-left: 22px; 
+        }
+        
+        li {
+            position: relative;
+            margin-bottom: 5px; 
+        }
+        
+        li::before {
+            content: '-';
+            position: absolute;
+            left: -18px; 
+            color: #888;
+        }
+
+        /* --- Collapsible Sections (Dropdowns) --- */
+        details {
+            margin-bottom: 6px; 
+            border: 1px solid #000; /* Darker border */
+            /* not hover in closed subtitle */
+            background-color: rgb(32, 58, 89); 
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        
+        summary {
+            cursor: pointer;
+            padding: 4px 8px; 
+            font-weight: 700; 
+            list-style: none;
+            user-select: none;
+            transition: background-color 0.1s;
+        }
+
+        /* Hover for ALL headers (open or closed) */
+        summary:hover {
+            /* hover on a subsection subtitle */
+            background-color: rgb(56, 123, 203); 
+        }
+        
+        /* The blue color when open */
+        details[open] > summary {
+            /* Match active title bar blue */
+            background-color: rgb(41, 74, 122);
+            border-bottom: 1px solid #000;
+        }
+        /* Hover for open (overrides default hover) */
+        details[open] > summary:hover {
+            /* hover on a subsection subtitle */
+            background-color: rgb(56, 123, 203); 
+        }
+
+
+        /* Custom arrow */
+        summary::before {
+            content: '►';
+            display: inline-block;
+            margin-right: 8px; 
+            font-size: 0.9em;
+            transition: transform 0.1s linear;
+        }
+        
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+        
+        /* Content inside a <details> dropdown */
+        .details-content {
+            padding: 10px; 
+            /* individual window background */
+            background-color: rgb(17, 17, 17); 
+            transition: background-color 0.2s;
+        }
+        
+        /* Content inside a <details> dropdown */
+        .details-content p {
+            margin-bottom: 5px; 
+        }
+        
+        /* Nested tree-node style for Skills */
+        .skills-tree summary {
+            background: none;
+            border: none;
+            padding: 2px 4px; 
+            font-weight: 400; /* Tree nodes are not bold */
+        }
+        .skills-tree summary:hover {
+            /* hover on a subsection subtitle */
+            background-color: rgb(56, 123, 203);
+        }
+        .skills-tree details {
+            background: none;
+            border: none;
+            margin-left: 12px; 
+        }
+        .skills-tree details[open] > summary {
+             background-color: transparent; /* No blue for tree nodes */
+             border: none;
+        }
+        .skills-tree .details-content {
+            padding: 5px 0 5px 22px; 
+            border: none;
+        }
+        .skills-tree p {
+            color: #BBB; /* Slightly dimmer text for content */
+            transition: color 0.2s;
+        }
+
+        /* --- Link Styling --- */
+        a, a:visited {
+            color: #5E98D9; /* A blue that fits the theme */
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        a:hover {
+            text-decoration: underline;
+            color: #7EAFE9;
+        }
+        
+        /* Link styling for Summary headers */
+        summary a, summary a:visited {
+            color: inherit;
+            text-decoration: none;
+        }
+        summary a:hover {
+            text-decoration: underline;
+        }
+
+        /* Small link inside project dropdowns */
+        .project-link {
+            font-size: 0.8em; /* Smaller font */
+            margin-top: 10px;
+        }
+        
+        /* Styling for "Other Projects" list */
+        .other-projects-list li a {
+            color: #E0E0E0; /* White, non-underlined link */
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .other-projects-list li a:hover {
+            color: #7EAFE9; /* Standard hover color */
+            text-decoration: underline;
+        }
+        
+        /* Debug Radio Buttons */
+        .debug-radio-group {
+            display: flex !important; /* Override .debug-widget display:block */
+            gap: 10px;
+            align-items: center;
+        }
+        .debug-radio-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .debug-radio-group input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        /* Debug window font fix */
+        #debug-window {
+            font-size: 16px !important; /* Keep debug window font size constant */
+        }
+
+
+        /* ================================================= */
+        /* --- Light Mode Theme --- */
+        /* ================================================= */
+
+        body.light-mode {
+            background-color: #D6D6D6; /* Lighter main background */
+            color: #2E2E2E; /* Dark text */
+        }
+
+        /* --- Light Mode Scrollbar --- */
+        body.light-mode ::-webkit-scrollbar-track {
+            background: #FFFFFF;
+        }
+        body.light-mode ::-webkit-scrollbar-thumb {
+            background: #999;
+            border-color: #FFFFFF;
+        }
+        body.light-mode ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+        body.light-mode ::-webkit-scrollbar-corner {
+            background: #D6D6D6;
+        }
+
+        /* --- Light Mode Window --- */
+        body.light-mode .imgui-window {
+            background-color: #FFFFFF;
+            border: 1px solid #AAAAAA;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        body.light-mode .imgui-title-bar {
+            background-color: #F0F0F0; /* Light gray title */
+            color: #2E2E2E;
+            border-bottom: 1px solid #AAAAAA;
+        }
+        body.light-mode .imgui-window.active > .imgui-title-bar {
+            background-color: #B4C7E0; /* Light blue active */
+        }
+        body.light-mode .imgui-content {
+            background-color: #FFFFFF;
+        }
+
+        /* --- Light Mode Resize Handle --- */
+        body.light-mode .imgui-resize-handle {
+            background:
+                linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 60%, #999 60%, #999 65%, transparent 65%),
+                linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 75%, #999 75%, #999 80%, transparent 80%),
+                linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 90%, #999 90%, #999 95%, transparent 95%);
+        }
+        
+        /* --- Light Mode Content --- */
+        body.light-mode hr {
+            border-top: 1px solid #DDDDDD;
+        }
+        body.light-mode li::before {
+            color: #888;
+        }
+        body.light-mode .skills-tree p {
+            color: #555;
+        }
+
+        /* --- Light Mode Links --- */
+        body.light-mode a, body.light-mode a:visited {
+            color: #005A9C;
+        }
+        body.light-mode a:hover {
+            color: #0078D4;
+        }
+        body.light-mode .other-projects-list li a {
+            color: #2E2E2E; /* Dark text */
+        }
+        body.light-mode .other-projects-list li a:hover {
+            color: #0078D4;
+        }
+
+        /* --- Light Mode Collapsibles --- */
+        body.light-mode details {
+            border: 1px solid #AAAAAA;
+            background-color: #D3E0ED; /* Closed subtitle */
+        }
+        body.light-mode details[open] > summary {
+            background-color: #B4C7E0; /* Open subtitle */
+            border-bottom: 1px solid #AAAAAA;
+        }
+        body.light-mode summary:hover {
+            background-color: #C8D8E8; /* Hover subtitle */
+        }
+        body.light-mode details[open] > summary:hover {
+            background-color: #C8D8E8; /* Hover (open) */
+        }
+        body.light-mode .details-content {
+            background-color: #FFFFFF;
+        }
+        
+        /* --- Light Mode Widgets (in JS) --- */
+        body.light-mode .debug-widget {
+            color: #2E2E2E;
+        }
+        
+        body.light-mode #debug-button,
+        body.light-mode #resume-button,
+        body.light-mode #reset-layout-button {
+            background-color: #B4C7E0;
+            border-color: #B4C7E0;
+            color: #2E2E2E;
+        }
+        body.light-mode #debug-button:hover,
+        body.light-mode #resume-button:hover,
+        body.light-mode #reset-layout-button:hover {
+            background-color: #C8D8E8;
+            border-color: #C8D8E8;
+        }
+        body.light-mode #debug-button:active,
+        body.light-mode #resume-button:active,
+        body.light-mode #reset-layout-button:active {
+            background-color: #A0B9D6;
+            border-color: #A0B9D6;
+        }
+        
+        body.light-mode #debug-check {
+            background-color: #D0D0D0;
+            border-color: #AAAAAA;
+        }
+        body.light-mode #debug-check:checked {
+            background-color: #B4C7E0;
+            border-color: #B4C7E0;
+        }
+        body.light-mode #debug-check:checked::after {
+            color: #2E2E2E;
+        }
+        
+        body.light-mode #debug-slider {
+            background: #D0D0D0;
+            border-color: #FFFFFF;
+        }
+        body.light-mode #debug-slider::-webkit-slider-thumb {
+            background: #B4C7E0;
+            border-color: #C8D8E8;
+        }
+        body.light-mode #debug-slider::-webkit-slider-thumb:hover {
+            background: #C8D8E8;
+        }
+        body.light-mode #debug-slider::-moz-range-thumb {
+            background: #B4C7E0;
+            border-color: #C8D8E8;
+        }
+        
+
+
+        /* --- Responsive Media Query for Mobile --- */
+        @media (max-width: 800px) {
+            html, body {
+                overflow: auto; /* Enable scrolling on mobile */
+            }
+            
+            #window-container {
+                /* Disable scaling on mobile */
+                transform: none !important;
+                /* Panning container needs to be relative */
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+            }
+
+            .imgui-window {
+                /* Override all desktop positioning */
+                position: relative !important;
+                width: calc(100% - 20px) !important; /* Full width with margin */
+                height: auto !important; /* Auto height */
+                top: auto !important;
+                left: auto !important;
+                margin: 10px;
+                z-index: auto !important;
+            }
+
+            /* Hide fixed debug window on mobile, stack it normally */
+            .imgui-window[style*="position: fixed"] {
+                position: relative !important;
+                right: auto !important;
+                width: calc(100% - 20px) !important;
+                height: auto !important;
+                margin: 10px;
+                z-index: auto !important;
+            }
+
+            .imgui-resize-handle {
+                display: none; /* Hide resize handle on mobile */
+            }
+
+            .imgui-title-bar {
+                cursor: default; /* No 'move' cursor on mobile */
+            }
+            
+            /* Hide canvas on mobile for performance */
+            #background-canvas {
+                display: none;
+            }
+        }
+
+        /* --- Background Canvas --- */
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind windows but in front of body bg */
+            pointer-events: none; /* Let clicks pass through */
+        }
+
+    </style>
+</head>
+<body>
+    
+    <canvas id="background-canvas"></canvas>
+
+    <div id="window-container">
+
+        <!-- Window 1: About Me -->
+        <div id="window-about" class="imgui-window"> 
+            <div class="imgui-title-bar">
+                <span class="window-collapse-btn" title="Collapse">►</span>
+                <span>About Me</span>
+            </div>
+            <div class="imgui-content">
+                <p style="font-weight: 700;">Akul Chordia</p>
+                <p>US Citizen</p>
+                <hr>
+                <p>Email: akulchordia04@gmail.com</p>
+                <p>LinkedIn: <a href="https://linkedin.com/in/akul-chordia" target="_blank" rel="noopener noreferrer">linkedin.com/in/akul-chordia</a></p>
+                <p>GitHub: <a href="https://github.com/Akul-Chordia" target="_blank" rel="noopener noreferrer">github.com/Akul-Chordia</a></p>
+                <button id="resume-button" class="debug-widget" style="margin-top: 10px;">View Resume</button>
+            </div>
+            <div class="imgui-resize-handle"></div>
+        </div>
+
+        <!-- Window 2: Education -->
+        <div id="window-education" class="imgui-window"> 
+            <div class="imgui-title-bar">
+                <span class="window-collapse-btn" title="Collapse">►</span>
+                <span>Education</span>
+            </div>
+            <div class="imgui-content">
+                <p style="font-weight: 700;">B.Tech Computer Science and Engineering</p>
+                <p>Vellore Institute of Technology, Vellore</p>
+                <p style="color: #999;">GPA: 8.24/10 (3.56/4)</p>
+                <p style="color: #999;">2022-2026</p>
+                <hr>
+                <p style="font-weight: 700;">Diploma, Data Science</p>
+                <p>Indian Institute of Technology, Madras</p>
+                <p style="color: #999;">2022-2024</p>
+                <hr>
+                <p style="font-weight: 700;">High School Diploma</p>
+                <p>Rockwoods High School, Udaipur</p>
+                <p style="color: #999;">91.4%</p>
+                <p style="color: #999;">2017-2022</p>
+            </div>
+            <div class="imgui-resize-handle"></div>
+        </div>
+
+        <!-- Window 3: Work Experience -->
+        <div id="window-experience" class="imgui-window"> 
+            <div class="imgui-title-bar">
+                <span class="window-collapse-btn" title="Collapse">►</span>
+                <span>Work Experience</span>
+            </div>
+            <div class="imgui-content">
+                <details open> 
+                    <summary><a href="https://easelearn.ai" target="_blank" rel="noopener noreferrer">EaseLearn AI - Head of AI</a> (July 2025 - Present)</summary>
+                    <div class="details-content">
+                        <ul>
+                            <li>Reduced jailbreak vulnerabilities by ~85% by engineering a multi-stage defense pipeline that utilized prompt analysis, fine-tuned guardrail models, and topic restriction to create an enterprise-grade secure Al infrastructure.</li>
+                            <li>Cut query latency 40% by implementing a scalable routing pipeline with asynchronous processing and optimized model selection logic; system has 20k+ users.</li>
+                        </ul>
+                    </div>
+                </details>
+                <details> 
+                    <summary><a href="https://www.niftyindices.com" target="_blank" rel="noopener noreferrer">NSE Indices Ltd. - Research Intern</a> (May 2025 - July 2025)</summary>
+                    <div class="details-content">
+                        <ul>
+                            <li>Benchmarked 12+ providers to identify white-space opportunities in index design; directly contributed to strategy for new product lines where NSE had no presence.</li>
+                            <li>Collaborated on algorithmic design, development and back testing of prototype indices, evaluating performance and market fit.</li>
+                            <li>Delivered final presentation on findings and recommendations to the CEO, VPs, and Director of NSE Indices, shaping senior leadership's roadmap for future index offerings.</li>
+                        </ul>
+                    </div>
+                </details>
+                <details open> 
+                    <summary><a href="https://particleblack.com/" target="_blank" rel="noopener noreferrer">Particle Black - Data Analyst Intern</a> (Feb 2025 - May 2025)</summary>
+                    <div class="details-content">
+                        <ul>
+                            <li>Engineered a machine learning pipeline using scikit-learn to predict real-estate sales, encompassing data ingestion, model training, and validation; application in property valuation and credit risk modeling.</li>
+                            <li>Built features from raw listing data (location, price, attributes, historical sales); framework extendable to large-scale asset pricing.</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+            <div class="imgui-resize-handle"></div>
+        </div>
+
+        <!-- Window 4: Projects -->
+        <div id="window-projects" class="imgui-window"> 
+            <div class="imgui-title-bar">
+                <span class="window-collapse-btn" title="Collapse">►</span>
+                <span>Projects</span>
+            </div>
+            <div class="imgui-content">
+                <details open> 
+                    <summary>OrderBook (C++)</summary>
+                    <div class="details-content">
+                        <p>Built a high-performance multi-threaded order book supporting multiple order types with a custom price-time priority matching engine.</p>
+                        <p>Simulated realistic exchange microstructure by enabling concurrent agents, order flow dynamics, and strict FIFO queueing.</p>
+                        <p>Designed memory-safe, modular architecture (smart pointers, layered abstractions) for speed and extensibility.</p>
+                        <p class="project-link"><a href="https://github.com/Akul-Chordia/OrderBook" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
+                    </div>
+                </details>
+                <details> 
+                    <summary>CPU Simulator (C++)</summary>
+                    <div class="details-content">
+                        <p>Engineered a functional CPU from first principles using only AND/NOT gates; implemented custom assembly language.</p>
+                        <p>Implemented a comprehensive CLI with program loading, step-by-step debugging, register status monitoring, and execution control.</p>
+                        <p>Foundation for educational tools, hardware simulation, or low-level system research.</p>
+                        <p class="project-link"><a href="https://github.com/Akul-Chordia/Virtual_CPU" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
+                    </div>
+                </details>
+                <details> 
+                    <summary>Shopeasy (Flutter)</summary>
+                    <div class="details-content">
+                        <p>Architected a low-latency event-driven pipeline using Cloud Firestore for instant real-time cart synchronization for a retail system.</p>
+                        <p>Achieved 70% higher checkout throughput and reduced manpower requirements by 80% during testing.</p>
+                        <p>Prototype demonstrates potential for scaling to full smart-retail infrastructure.</p>
+                        <p class="project-link"><a href="https://github.com/Akul-Chordia/shopeasy" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
+                    </div>
+                </details>
+                <details>
+                    <summary>Narrative Game Engine (C++)</summary>
+                    <div class="details-content">
+                        <p>Ported Windows-based OpenGL engine to macOS reworking windowing, input, and rendering backends.</p>
+                        <p>Project illustrates adaptability in systems-level engineering; foundation for future cross-platform engines.</p>
+                        <p class="project-link"><a href="https://github.com/Akul-Chordia/Narrative-Engine" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
+                    </div>
+                </details>
+                <details open> 
+                    <summary>Other Projects</summary>
+                    <div class="details-content">
+                        <ul class="other-projects-list">
+                            <li><a href="https://github.com/Akul-Chordia/options_pricing" target="_blank" rel="noopener noreferrer">Options Pricing (C++): Black-Scholes, Binomial models, Monte Carlo.</a></li>
+                            <li><a href="https://github.com/Akul-Chordia/option_expiration_graph" target="_blank" rel="noopener noreferrer">Robinhood style option payoff graph (Python).</a></li>
+                            <li><a href="https://github.com/Akul-Chordia/auction_pricing" target="_blank" rel="noopener noreferrer">Auction-style price discovery simulation (Python) (Maximizing fills).</a></li>
+                            <li><a href="https://github.com/Akul-Chordia/Statistical_Arbitrage" target="_blank" rel="noopener noreferrer">Statistical Arbitrage - Pairs Trading Strategy (Python).</a></li>
+                            <li><a href="https://github.com/Akul-Chordia/bettr" target="_blank" rel="noopener noreferrer">Bettr-custom contract betting (Django).</a></li>
+                            <li><a href="https://github.com/Akul-Chordia/FOCUS" target="_blank" rel="noopener noreferrer">FOCUS - LLM based ADHD diagnosis (Flask).</a></li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+            <div class="imgui-resize-handle"></div>
+        </div>
+
+        <!-- Window 5: Achievements -->
+        <div id="window-achievements" class="imgui-window"> 
+            <div class="imgui-title-bar">
+                <span class="window-collapse-btn" title="Collapse">►</span>
+                <span>Achievements</span>
+            </div>
+            <div class="imgui-content">
+                <p style="font-weight: 700;">Hackathons</p>
+                <ul>
+                    <li>Winner: Central hack - VIT'S BIGGEST FLAGSHIP HACKATHON</li>
+                    <li>Winner: Electra 2024 - Flask webapp for mental disorder diagnosis</li>
+                    <li>Second Runner-up: ACM open reverse coding competition 2023</li>
+                    <li>Winner: IIT Madras Deepracer 2023</li>
+                </ul>
+                <hr>
+                <p style="font-weight: 700;">VIT Debate Club - Senior Core</p>
+                <ul>
+                    <li>Led one of India's largest debate clubs.</li>
+                    <li>Organized and competed in global tournaments.</li>
+                    <li>Mentored and judged school teams.</li>
+                </ul>
+            </div>
+            <div class="imgui-resize-handle"></div>
+        </div>
+
+        <!-- Window 6: Technical Skills -->
+        <div id="window-skills" class="imgui-window"> 
+            <div class="imgui-title-bar">
+                <span class="window-collapse-btn" title="Collapse">►</span>
+                <span>Technical Skills</span>
+            </div>
+            <div class="imgui-content skills-tree">
+                <details open>
+                    <summary>Languages</summary>
+                    <div class="details-content">
+                        <p>C++, Python, R, C, SQL, Java</p>
+                    </div>
+                </details>
+                <details open>
+                    <summary>Academic</summary>
+                    <div class="details-content">
+                        <p>Operating Systems, Compiler Design, Data Structures & Algorithms, DBMS, Financial Analytics</p>
+                    </div>
+                </details>
+                <details open>
+                    <summary>Systems & Tools</summary>
+                    <div class="details-content">
+                        <p>Git, Linux, Unix, Streamlit, Tableau, PowerPoint, Excel, AWS, Shell Scripting, VBA</p>
+                    </div>
+                </details>
+                <details open> 
+                    <summary>Finance and Data</summary>
+                    <div class="details-content">
+                        <p>Options Pricing, Monte Carlo Simulation, Statistical Arbitrage, Time Series Analysis, Portfolio Optimization</p>
+                    </div>
+                </details> 
+                <details open>
+                    <summary>Other</summary>
+                    <div class="details-content">
+                        <p>API Integration, Web Scraping, RESTful Systems, Low-Latency Data Pipelines</p>
+                    </div>
+                </details>
+            </div>
+            <div class="imgui-resize-handle"></div>
+        </div>
+        
+
+    </div> <!-- End of #window-container -->
+
+    <!-- Window 7: Debug Window -->
+    <div id="debug-window" class="imgui-window active" style="position: fixed; top: 20px; right: 20px; width: 280px; height: 250px; z-index: 2000;">
+        <div class="imgui-title-bar">
+            <span class="window-collapse-btn" title="Collapse">►</span>
+            <span>Debug Window</span>
+        </div>
+        <div class="imgui-content">
+            <p id="app-stats">App: ...</p>
+            <p id="mouse-stats">Mouse: (0, 0)</p>
+            
+            <hr>
+            <!-- Theme Radio Buttons -->
+            <div class="debug-radio-group debug-widget" style="margin-top: 5px;">
+                <span>Theme:</span>
+                <label>
+                    <input type="radio" name="theme" value="dark" id="theme-dark" checked>
+                    <span>Dark</span>
+                </label>
+                <label>
+                    <input type="radio" name="theme" value="light" id="theme-light">
+                    <span>Light</span>
+                </label>
+            </div>
+            <hr>
+            <!-- Scale Slider -->
+            <label for="font-slider" class="debug-widget">Font Size: <span id="font-value">16</span>px</label>
+            <input type="range" min="10" max="25" value="16" step="1" id="font-slider">
+
+            <!-- Reset Layout Button -->
+            <button id="reset-layout-button" class="debug-widget" style="margin-top: 10px;">Reset Layout</button>
+        </div>
+    </div>
+
+
+    <script>
+        // This script block contains all the logic for dragging, resizing, and interactivity.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Set initial window layout based on viewport ---
+            initializeWindowLayout();
+
+            // --- Canvas and Background State ---
+            const canvas = document.getElementById('background-canvas');
+            const ctx = canvas.getContext('2d');
+            let mouseX = window.innerWidth / 2;
+            let mouseY = window.innerHeight / 2;
+
+            // --- Global State ---
+            let maxZ = 100;
+            let topWindow = document.querySelector('.imgui-window.active');
+            
+            // Store for initial window styles
+            const initialWindowStyles = new Map();
+            // Only select windows inside the panned container
+            const windows = document.querySelectorAll('#window-container .imgui-window');
+            const debugWindow = document.getElementById('debug-window'); // Get debug window
+            
+            // Store for initial collapsible states
+            const initialOpenStates = new Map();
+            document.querySelectorAll('details').forEach(d => {
+                initialOpenStates.set(d, d.open);
+            });
+
+            // Store for initial scale
+            const windowContainer = document.getElementById('window-container');
+            const fontSlider = document.getElementById('font-slider');
+            const fontValue = document.getElementById('font-value');
+            let baseFontSize = 16;
+
+            // --- Auto-set initial font size ---
+            if (window.innerWidth > 1920) {
+                baseFontSize = 18;
+            } else if (window.innerWidth <= 1440 && window.innerWidth > 800) {
+                baseFontSize = 14;
+            }
+            document.documentElement.style.fontSize = baseFontSize + 'px';
+            fontSlider.value = baseFontSize;
+            fontValue.textContent = baseFontSize;
+            // --- End auto-set ---
+
+            // Panning state
+            let panX = 0;
+            let panY = 0;
+
+
+            // --- Initialize Window Positions and Z-Index ---
+            windows.forEach(w => {
+                // Save initial style for reset
+                initialWindowStyles.set(w, w.getAttribute('style'));
+
+                const z = parseInt(w.style.zIndex, 10);
+                if (z > maxZ) {
+                    maxZ = z;
+                    topWindow = w; // The highest z-index is the top window
+                }
+            });
+            
+            // Ensure the highest z-index window also has the .active class
+            if (topWindow) {
+                // Only affect panned windows
+                document.querySelectorAll('#window-container .imgui-window').forEach(w => w.classList.remove('active'));
+                topWindow.classList.add('active');
+            }
+
+            // --- Dynamically set initial window layout ---
+            function initializeWindowLayout() {
+                // Don't run on mobile, CSS handles it
+                if (window.innerWidth <= 800) return;
+
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+
+                const layouts = {
+                    'window-about':       { top: vh * 0.02, left: vw * 0.01, width: vw * 0.18, height: vh * 0.30, z: 101 },
+                    'window-education':   { top: vh * 0.35, left: vw * 0.01, width: vw * 0.18, height: vh * 0.40, z: 102 },
+                    'window-experience':  { top: vh * 0.02, left: vw * 0.20, width: vw * 0.35, height: vh * 0.45, z: 103 },
+                    'window-projects':    { top: vh * 0.50, left: vw * 0.21, width: vw * 0.40, height: vh * 0.48, z: 104 }, // Overlaps
+                    'window-achievements':{ top: vh * 0.02, left: vw * 0.56, width: vw * 0.26, height: vh * 0.35, z: 105 }, // Overlaps
+                    'window-skills':      { top: vh * 0.40, left: vw * 0.63, width: vw * 0.35, height: vh * 0.45, z: 106 }  // Overlaps
+                };
+
+                for (const id in layouts) {
+                    const win = document.getElementById(id);
+                    if (win) {
+                        const layout = layouts[id];
+                        win.style.top = `${layout.top}px`;
+                        win.style.left = `${layout.left}px`;
+                        win.style.width = `${layout.width}px`;
+                        win.style.height = `${layout.height}px`;
+                        win.style.zIndex = layout.z;
+                    }
+                }
+            }
+
+
+            // --- Make all windows interactive ---
+            windows.forEach(makeWindowInteractive);
+            makeWindowInteractive(debugWindow); // Apply to debug window
+
+            function makeWindowInteractive(windowElement) {
+                const titleBar = windowElement.querySelector('.imgui-title-bar');
+                const resizeHandle = windowElement.querySelector('.imgui-resize-handle');
+                const collapseBtn = windowElement.querySelector('.window-collapse-btn');
+                
+                // --- 1. Bring to Front Logic ---
+                function bringToFront() {
+                    // Don't do this on mobile
+                    if (window.innerWidth <= 800) return;
+                    
+                    // Don't run if it's the debug window
+                    if (windowElement.id === 'debug-window' && !windowElement.classList.contains('collapsed')) return;
+                    
+                    // Don't run if it's already the top window
+                    if (windowElement.classList.contains('active')) return;
+
+                    // Remove 'active' class from the *current* top window
+                    const currentActive = document.querySelector('#window-container .imgui-window.active');
+                    if (currentActive) {
+                        currentActive.classList.remove('active');
+                    }
+
+                    maxZ++; // Increment the global z-index
+                    windowElement.style.zIndex = maxZ;
+                    windowElement.classList.add('active'); // Add 'active' class to this window
+                }
+                
+                // Add mousedown listener only if it's not the debug window (or if it is, for bringing to front)
+                windowElement.addEventListener('mousedown', bringToFront, { capture: true });
+
+
+                // --- 2. Dragging Logic ---
+                if (titleBar) {
+                    titleBar.addEventListener('mousedown', (e) => {
+                        // Don't drag on mobile or when clicking on links or other widgets
+                        if (window.innerWidth <= 800 || e.target.closest('button, input, a, summary, .window-collapse-btn')) return;
+                        
+                        if (windowElement.id === 'debug-window') return;
+                        
+                        e.preventDefault();
+                        bringToFront(); // This will also handle the active state
+                        
+                        // No longer scaling!
+                        const currentScale = 1.0; 
+                        
+                        const startX = e.clientX - (windowElement.offsetLeft);
+                        const startY = e.clientY - (windowElement.offsetTop);
+
+                        function onMouseMove(moveEvent) {
+                            let newX = (moveEvent.clientX - startX);
+                            let newY = (moveEvent.clientY - startY);
+
+                            windowElement.style.left = newX + 'px';
+                            windowElement.style.top = newY + 'px';
+                        }
+
+                        function onMouseUp() {
+                            document.removeEventListener('mousemove', onMouseMove);
+                            document.removeEventListener('mouseup', onMouseUp);
+                        }
+
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp);
+                    });
+                }
+
+                // --- 3. Resizing Logic ---
+                if (resizeHandle) {
+                    resizeHandle.addEventListener('mousedown', (e) => {
+                        // Don't resize on mobile
+                        if (window.innerWidth <= 800) return;
+
+                        e.preventDefault();
+                        e.stopPropagation();
+                        bringToFront(); // This will also handle the active state
+                        
+                        const startWidth = windowElement.offsetWidth;
+                        const startHeight = windowElement.offsetHeight;
+                        const startMouseX = e.clientX;
+                        const startMouseY = e.clientY;
+                        
+                        // No longer scaling!
+                        const currentScale = 1.0; 
+
+                        function onMouseMove(moveEvent) {
+                            const deltaX = (moveEvent.clientX - startMouseX) / currentScale;
+                            const deltaY = (moveEvent.clientY - startMouseY) / currentScale;
+                            
+                            windowElement.style.width = (startWidth + deltaX) + 'px';
+                            windowElement.style.height = (startHeight + deltaY) + 'px';
+                        }
+
+                        function onMouseUp() {
+                            document.removeEventListener('mousemove', onMouseMove);
+                            document.removeEventListener('mouseup', onMouseUp);
+                        }
+
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp);
+                    });
+                }
+                
+                // --- 4. Collapse Logic ---
+                if (collapseBtn) {
+                    collapseBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation(); // Don't trigger drag/activate
+                        
+                        const isCollapsed = windowElement.classList.toggle('collapsed');
+                        
+                        // Update button title
+                        if (isCollapsed) {
+                            collapseBtn.title = 'Expand';
+                        } else {
+                            collapseBtn.title = 'Collapse';
+                            // When expanding, bring to front
+                            bringToFront();
+                        }
+                    });
+                }
+            }
+            
+            // --- Panning Logic ---
+            document.body.addEventListener('mousedown', (e) => {
+                // Only pan when clicking on the body/container itself, not a window or widget
+                if (e.target === document.body || e.target === windowContainer) {
+                    e.preventDefault();
+                    
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startPanX = panX;
+                    const startPanY = panY;
+
+                    function onMouseMove(moveEvent) {
+                        const deltaX = moveEvent.clientX - startX;
+                        const deltaY = moveEvent.clientY - startY;
+                        
+                        panX = startPanX + deltaX;
+                        panY = startPanY + deltaY;
+                        
+                        windowContainer.style.transform = `translate(${panX}px, ${panY}px)`;
+                    }
+
+                    function onMouseUp() {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    }
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                }
+            });
+
+
+            // --- Button Event Listeners ---
+            
+            // Resume Button
+            const resumeButton = document.getElementById('resume-button');
+            if (resumeButton) {
+                resumeButton.addEventListener('click', () => {
+                    // Make sure 'Akul-resume.pdf' is in the same folder!
+                    window.open('Akul-resume.pdf', '_blank');
+                });
+            }
+
+            // Reset Layout Button
+            const resetButton = document.getElementById('reset-layout-button');
+            if (resetButton) {
+                resetButton.addEventListener('click', () => {
+                    // 1. Reset window positions and sizes
+                    windows.forEach(win => {
+                        win.setAttribute('style', initialWindowStyles.get(win));
+                        win.classList.remove('collapsed');
+                        // Reset collapse button text
+                        const btn = win.querySelector('.window-collapse-btn');
+                        if (btn) {
+                            btn.title = 'Collapse';
+                        }
+                    });
+                    
+                    // 2. Re-initialize z-index and active state
+                    maxZ = 100;
+                    topWindow = null;
+                    document.querySelectorAll('#window-container .imgui-window').forEach(w => {
+                        w.classList.remove('active'); // Clear all
+                        const z = parseInt(w.style.zIndex, 10);
+                        if (z > maxZ) {
+                            maxZ = z;
+                            topWindow = w;
+                        }
+                    });
+                    // Find the window with the highest z-index from the *original* styles
+                    let maxOriginalZ = -1;
+                    let newTopWindow = null;
+                    initialWindowStyles.forEach((style, win) => {
+                        const z = parseInt(win.style.zIndex, 10);
+                        if(z > maxOriginalZ) {
+                            maxOriginalZ = z;
+                            newTopWindow = win;
+                        }
+                    });
+                    if(newTopWindow) {
+                        newTopWindow.classList.add('active');
+                        maxZ = maxOriginalZ; // Reset maxZ
+                    }
+                    
+                    // 3. Reset collapsible states
+                    initialOpenStates.forEach((isOpen, el) => {
+                        el.open = isOpen;
+                    });
+                    
+                    // 4. Reset UI scale
+                    fontSlider.value = baseFontSize;
+                    fontValue.textContent = baseFontSize;
+                    document.documentElement.style.fontSize = baseFontSize + 'px';
+                    
+                    // 5. Reset theme (REMOVED)
+                    // document.getElementById('theme-dark').checked = true;
+                    // document.body.classList.remove('light-mode');
+
+                    // 6. Reset pan
+                    panX = 0;
+                    panY = 0;
+                    windowContainer.style.transform = `translate(0, 0)`;
+                });
+            }
+
+
+            // --- Scale Slider Logic ---
+            if (fontSlider) {
+                fontSlider.addEventListener('input', (e) => {
+                    const size = e.target.value;
+                    fontValue.textContent = size;
+                    document.documentElement.style.fontSize = size + 'px';
+                });
+            }
+
+            // --- Theme Radio Button Logic ---
+            document.getElementById('theme-dark').addEventListener('change', () => {
+                document.body.classList.remove('light-mode');
+            });
+            document.getElementById('theme-light').addEventListener('change', () => {
+                document.body.classList.add('light-mode');
+            });
+
+
+            // --- Real-time Stats Logic ---
+            const appStats = document.getElementById('app-stats');
+            const mouseStats = document.getElementById('mouse-stats');
+            
+            // Mouse Tracking
+            document.addEventListener('mousemove', e => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                
+                if (mouseStats) {
+                    mouseStats.textContent = `Mouse: (${e.clientX}, ${e.clientY})`;
+                }
+            });
+
+            // --- Canvas Resize ---
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas(); // Initial call
+
+            // --- Animation Loop ---
+            let lastTime = performance.now();
+            let frameCount = 0;
+            let fps = 0;
+            let lastFpsUpdate = performance.now();
+
+            // Background draw function
+            function drawBackground() {
+                const isLightMode = document.body.classList.contains('light-mode');
+                
+                // --- 1. Get colors based on theme ---
+                const bgColor = isLightMode ? 'rgb(0, 0, 0)' : 'rgb(255, 255, 255)';
+                const dotColor = isLightMode ? 'rgba(255, 255, 255, 0.10)' : 'rgba(35, 35, 35, 0.10)'; // Light grey dots
+                const spotlightColor = isLightMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.08)';
+                const gradientTop = isLightMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.03)';
+                const gradientBottom = isLightMode ? 'rgba(0, 0, 0, 0.05)' : 'rgba(0, 0, 0, 0.03)';
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // --- 2. Slight Gradient ---
+                // Use the base color
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Add a very subtle linear gradient on top
+                const linearGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                linearGrad.addColorStop(0, gradientTop);
+                linearGrad.addColorStop(1, gradientBottom);
+                ctx.fillStyle = linearGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+                // --- 3. Dots + Warp ---
+                const dotSpacing = 30;
+                const dotRadius = 75;
+                const maxWarpRadius = 250;
+                const warpStrength = 20;
+
+                // Offset the grid by panX and panY
+                const offsetX = panX % dotSpacing;
+                const offsetY = panY % dotSpacing;
+
+                ctx.fillStyle = dotColor;
+
+                for (let x = offsetX - dotSpacing; x < canvas.width + dotSpacing; x += dotSpacing) {
+                    for (let y = offsetY - dotSpacing; y < canvas.height + dotSpacing; y += dotSpacing) {
+                        
+                        const dotCanvasX = x;
+                        const dotCanvasY = y;
+                        
+                        let finalX = dotCanvasX;
+                        let finalY = dotCanvasY;
+
+                        // Calculate distance from mouse to the dot's *canvas* position
+                        const distX = dotCanvasX - mouseX;
+                        const distY = dotCanvasY - mouseY;
+                        const distance = Math.sqrt(distX * distX + distY * distY);
+
+                        if (distance > 0.1 && distance < maxWarpRadius) {
+                            const warpAmount = (maxWarpRadius - distance) / maxWarpRadius; // 1 at center, 0 at edge
+                            // Move dot *towards* mouse
+                            finalX = dotCanvasX - (distX / distance) * warpAmount * warpStrength;
+                            finalY = dotCanvasY - (distY / distance) * warpAmount * warpStrength;
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(finalX, finalY, dotRadius, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+                
+                // --- 4. Spotlight ---
+                const spotlightRadius = 300;
+                const spotlight = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, spotlightRadius);
+                spotlight.addColorStop(0, spotlightColor);
+                spotlight.addColorStop(0.8, 'rgba(0, 0, 0, 0)'); // Fade out quicker
+                spotlight.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                ctx.fillStyle = spotlight;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            function animateLoop(timestamp) {
+                // --- Draw Background ---
+                // Only draw if not on mobile (where canvas is hidden)
+                if (window.innerWidth > 800) {
+                    drawBackground();
+                } else {
+                    // Clear canvas on mobile just in case
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+
+
+                // --- Update Stats ---
+                frameCount++;
+                
+                // Update stats once per second
+                if (timestamp - lastFpsUpdate > 1000) {
+                    fps = frameCount;
+                    frameCount = 0;
+                    lastFpsUpdate = timestamp;
+                }
+                
+                if (appStats && fps > 0) {
+                    const frameTime = 1000 / fps;
+                    appStats.textContent = `App: ${frameTime.toFixed(1)} ms/frame (${fps} FPS)`;
+                } else if (appStats) {
+                    appStats.textContent = `App: ... ms/frame (0 FPS)`;
+                }
+
+                requestAnimationFrame(animateLoop);
+            }
+            // Start the animation loop
+            requestAnimationFrame(animateLoop);
+
+            
+            // --- Style Debug Widgets to look exactly like ImGui ---
+            const styleSheet = document.createElement("style");
+            styleSheet.textContent = `
+                .debug-widget {
+                    display: block;
+                    width: 100%;
+                    margin: 10px 0; 
+                }
+                #debug-button, #resume-button, #reset-layout-button { 
+                    padding: 8px 14px; 
+                    background-color: rgb(41, 74, 122);
+                    border: 1px solid rgb(41, 74, 122);
+                    color: #E0E0E0;
+                    font-weight: 700;
+                    /* Updated font stack and size */
+                    font-family: 'ProggyClean', 'Roboto Mono', 'Courier New', 'Bitstream Vera Sans Mono', monospace;
+                    font-size: 16px; 
+                    cursor: pointer;
+                    width: 100%;
+                    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+                }
+                #debug-button:hover, #resume-button:hover, #reset-layout-button:hover { 
+                    background-color: rgb(56, 123, 203);
+                    border-color: rgb(56, 123, 203);
+                }
+                #debug-button:active, #resume-button:active, #reset-layout-button:active { 
+                    background-color: rgb(32, 58, 89);
+                    border-color: rgb(32, 58, 89);
+                }
+                
+                /* --- Custom Slider --- */
+                #debug-slider, #font-slider {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 100%;
+                    height: 10px; 
+                    background: #353535;
+                    outline: none;
+                    border: 1px solid rgb(17, 17, 17);
+                    transition: background-color 0.2s, border-color 0.2s;
+                }
+                #debug-slider::-webkit-slider-thumb, #font-slider::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 20px; 
+                    height: 20px; 
+                    background: rgb(41, 74, 122);
+                    border: 1px solid rgb(56, 123, 203);
+                    cursor: grab;
+                    transition: background-color 0.2s, border-color 0.2s;
+                }
+                #debug-slider::-webkit-slider-thumb:hover, #font-slider::-webkit-slider-thumb:hover {
+                    background: rgb(56, 123, 203);
+                }
+                #debug-slider::-moz-range-thumb, #font-slider::-moz-range-thumb {
+                    width: 20px; 
+                    height: 20px; 
+                    background: rgb(41, 74, 122);
+                    border: 1px solid rgb(56, 123, 203);
+                    cursor: grab;
+                    transition: background-color 0.2s, border-color 0.2s;
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        });
+    </script>
+
+</body>
+</html>
