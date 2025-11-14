@@ -30,8 +30,8 @@
 
         /* Split html and body rules */
         html {
-            /* Font size is now on HTML element, default 16px */
-            font-size: 16px; 
+            /* Font size is now on HTML element, default 17px */
+            font-size: 17px; 
         }
 
         body {
@@ -82,7 +82,6 @@
         #window-container {
             width: 100%;
             height: 100%;
-            /* Removed transform-origin, added position */
             position: absolute;
             top: 0;
             left: 0;
@@ -118,6 +117,12 @@
             /* Use flex to position title and collapse button */
             display: flex;
             align-items: center;
+        }
+
+        /* NEW: Class for window title text */
+        .window-title-text {
+            font-size: 1.1rem;
+            vertical-align: middle; /* Align with collapse button */
         }
 
         /* Active Window Title Bar */
@@ -472,54 +477,391 @@
             color: #2E2E2E;
         }
         
-        body.light-mode #debug-button,
         body.light-mode #resume-button,
-        body.light-mode #reset-layout-button {
+        body.light-mode #reset-layout-button,
+        body.light-mode #portfolio-button { /* Added portfolio button */
             background-color: #B4C7E0;
             border-color: #B4C7E0;
             color: #2E2E2E;
         }
-        body.light-mode #debug-button:hover,
         body.light-mode #resume-button:hover,
-        body.light-mode #reset-layout-button:hover {
+        body.light-mode #reset-layout-button:hover,
+        body.light-mode #portfolio-button:hover { /* Added portfolio button */
             background-color: #C8D8E8;
             border-color: #C8D8E8;
         }
-        body.light-mode #debug-button:active,
         body.light-mode #resume-button:active,
-        body.light-mode #reset-layout-button:active {
+        body.light-mode #reset-layout-button:active,
+        body.light-mode #portfolio-button:active { /* Added portfolio button */
             background-color: #A0B9D6;
             border-color: #A0B9D6;
         }
         
-        body.light-mode #debug-check {
-            background-color: #D0D0D0;
-            border-color: #AAAAAA;
-        }
-        body.light-mode #debug-check:checked {
-            background-color: #B4C7E0;
-            border-color: #B4C7E0;
-        }
-        body.light-mode #debug-check:checked::after {
-            color: #2E2E2E;
-        }
-        
-        body.light-mode #debug-slider {
+        body.light-mode #debug-slider,
+        body.light-mode #font-slider {
             background: #D0D0D0;
             border-color: #FFFFFF;
         }
-        body.light-mode #debug-slider::-webkit-slider-thumb {
+        body.light-mode #debug-slider::-webkit-slider-thumb,
+        body.light-mode #font-slider::-webkit-slider-thumb {
             background: #B4C7E0;
             border-color: #C8D8E8;
         }
-        body.light-mode #debug-slider::-webkit-slider-thumb:hover {
+        body.light-mode #debug-slider::-webkit-slider-thumb:hover,
+        body.light-mode #font-slider::-webkit-slider-thumb:hover {
             background: #C8D8E8;
         }
-        body.light-mode #debug-slider::-moz-range-thumb {
+        body.light-mode #debug-slider::-moz-range-thumb,
+        body.light-mode #font-slider::-moz-range-thumb {
             background: #B4C7E0;
             border-color: #C8D8E8;
         }
         
+
+        /* ================================================= */
+        /* --- Portfolio Overlay Styles --- */
+        /* ================================================= */
+
+        #portfolio-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #portfolio-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        #portfolio-card {
+            /* iOS liquid glass effect */
+            background: transparent;
+            
+            border-radius: 20px;
+            width: 90vw;
+            height: 85vh;
+            max-width: 1400px;
+            max-height: 900px;
+            
+            
+            position: relative;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            
+            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+            
+            /* NEW: Add perspective for 3D transforms */
+            perspective: 1500px;
+        }
+
+        /* NEW: Animation for the border */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* UPDATED: Animation logic */
+        #portfolio-overlay.active #portfolio-card {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        /* NEW: Hiding animation */
+        #portfolio-overlay.hiding #portfolio-card {
+            animation: popOut 0.3s ease-out forwards;
+        }
+        
+        /* NEW: Keyframe animations for pop effect */
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        @keyframes popOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+        
+        #portfolio-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-family: 'Arial', sans-serif; /* Use a standard font for 'X' */
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #E0E0E0;
+            cursor: pointer;
+            z-index: 10;
+            line-height: 1;
+            transition: color 0.2s, transform 0.2s;
+        }
+        #portfolio-close-btn:hover {
+            color: #FFF;
+            transform: scale(1.1);
+        }
+
+        #portfolio-scroller {
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
+            height: 100%;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            z-index: 5; /* NEW: Ensure scroller is above pseudo-elements */
+            position: relative; /* NEW: Establish stacking context */
+        }
+        
+        /* Scroller scrollbar styling */
+        #portfolio-scroller::-webkit-scrollbar {
+            width: 10px; 
+            height: 10px; 
+        }
+        #portfolio-scroller::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        #portfolio-scroller::-webkit-scrollbar-thumb {
+            background: #555;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            background-clip: content-box;
+        }
+        #portfolio-scroller::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+
+        .project-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            padding: 40px 60px;
+            padding-top: 70px; /* Make space for close button */
+            overflow-y: auto;
+            
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr; /* Title row, content row */
+            gap: 25px;
+            
+            /* Match body font */
+            font-family: 'ProggyClean', 'Roboto Mono', 'Courier New', 'Bitstream Vera Sans Mono', monospace;
+            color: #E0E0E0;
+        }
+        
+        .project-slide h2 {
+            grid-column: 1 / -1; /* Span full width */
+            font-size: 2rem; /* Larger font size */
+            font-weight: 700;
+            color: #FFF;
+            border-bottom: 2px solid rgb(41, 74, 122);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .slide-content {
+            grid-column: 1 / 2;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .slide-content p {
+            margin-bottom: 15px;
+        }
+        .slide-content ul {
+            padding-left: 22px; /* Match resume list */
+        }
+        .slide-content li::before {
+             content: '-';
+            position: absolute;
+            left: -18px; 
+            color: #888;
+        }
+        
+        .slide-media {
+            grid-column: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .slide-media img,
+        .slide-media video {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #353535;
+            background-color: #000;
+        }
+
+        /* --- NEW: Styles for Project Grid (Slide 5) --- */
+        .project-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .project-grid-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #353535;
+            border-radius: 8px;
+            padding: 15px;
+            transition: background 0.2s;
+        }
+        .project-grid-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .project-grid-item h4 {
+            font-weight: 700;
+            color: #FFF;
+            margin-bottom: 8px;
+            font-size: 1.1rem; /* Match slide content font */
+        }
+        .project-grid-item p {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: #CCC;
+        }
+        .project-grid-item a {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        
+        /* --- NEW: Fan layout for portfolio cards (Desktop-only) --- */
+        @media (min-width: 801px) {
+            #portfolio-scroller {
+                /* Override slider styles */
+                display: grid;
+                place-items: center;
+                /* UPDATED: Allow shadows/hover effects to be visible */
+                overflow: visible; 
+            }
+            
+            .project-slide {
+                /* Override slider styles */
+                grid-column: 1 / 1;
+                grid-row: 1 / 1;
+                width: 45%; /* USER REQUEST: Make cards narrower */
+                height: 85%;
+                position: absolute; /* Needed for transform and z-index */
+                flex: none;
+                scroll-snap-align: none;
+                
+                /* Set transform origin to the center */
+                transform-origin: 50% 50%;
+                transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                            z-index 0s 0.2s; /* Delay z-index pop */
+                
+                /* NEW: Add frosted glass background to each slide */
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(30, 30, 30, 0.65); /* More transparent */
+                backdrop-filter: blur(15px) saturate(150%); /* More blur */
+                -webkit-backdrop-filter: blur(15px) saturate(150%); /* More blur */
+                border: 1px solid rgba(100, 100, 100, 0.2); /* Softer border */
+                border-radius: 50px; /* USER REQUEST: A lot more rounded */
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            }
+
+            .project-slide:hover {
+                /* On hover, apply the base transform *plus* the hover effects */
+                transform: var(--base-transform) translateY(-1.5rem) scale(var(--base-scale, 1) * 1.05);
+                z-index: 11;
+                transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+                            z-index 0s 0s; /* No delay on hover */
+            }
+            
+            .project-slide:active {
+                /* NEW: Add a "press" effect on click */
+                transform: var(--base-transform) translateY(-1.0rem) scale(var(--base-scale, 1) * 1.02);
+                z-index: 10; /* Below hover, but above others */
+                transition: transform 0.1s ease;
+            }
+            
+            /* * We use CSS variables to store the "base" position of each card.
+             * The :hover rule then adds to this base position.
+             */
+        }
+        
+        /* --- Light Mode: Portfolio --- */
+        
+        body.light-mode #portfolio-card {
+            /* UPDATED: Light mode glass effect */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%), rgba(255, 255, 255, 0.4);
+            border-color: rgba(200, 200, 200, 0.3);
+            color: #2E2E2E;
+            /* Light mode glow */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1), 
+                        0 0 15px 5px rgba(180, 199, 224, 0.4); 
+        }
+
+        body.light-mode #portfolio-close-btn {
+            color: #2E2E2E;
+        }
+        body.light-mode #portfolio-close-btn:hover {
+            color: #000;
+        }
+        body.light-mode .project-slide {
+            color: #2E2E2E;
+        }
+        body.light-mode .project-slide h2 {
+            color: #000;
+            border-bottom-color: #B4C7E0;
+        }
+        body.light-mode .project-slide li::before {
+            color: #888;
+        }
+        body.light-mode .slide-media img,
+        body.light-mode .slide-media video {
+            border-color: #CCC;
+            background-color: #EEE;
+        }
+        
+        /* Light mode scrollbar for scroller */
+        body.light-mode #portfolio-scroller::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.2);
+        }
+        body.light-mode #portfolio-scroller::-webkit-scrollbar-thumb {
+            background: #999;
+        }
+        body.light-mode #portfolio-scroller::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* --- NEW: Light mode for grid --- */
+        body.light-mode .project-grid-item {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: #DDD;
+        }
+        body.light-mode .project-grid-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        body.light-mode .project-grid-item h4 {
+            color: #000;
+        }
+        body.light-mode .project-grid-item p {
+            color: #333;
+        }
 
 
         /* --- Responsive Media Query for Mobile --- */
@@ -570,7 +912,49 @@
             #background-canvas {
                 display: none;
             }
+            
+            /* --- Portfolio Mobile --- */
+            #portfolio-card {
+                width: 100vw;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+            /* Hide futuristic effects on mobile for performance/cleanliness */
+            #portfolio-card::before, #portfolio-card::after {
+                display: none;
+            }
+            .project-slide {
+                grid-template-columns: 1fr; /* Stack content vertically */
+                grid-template-rows: auto auto 1fr; /* Title, Content, Media */
+                padding: 20px;
+                padding-top: 60px;
+            }
+            .slide-content {
+                grid-column: 1 / -1;
+            }
+            .slide-media {
+                grid-column: 1 / -1;
+            }
+            #portfolio-close-btn {
+                top: 15px;
+                right: 20px;
+            }
+            
+            /* --- NEW: Mobile responsiveness for grid --- */
+            .project-grid {
+                /* Stack grid items on mobile */
+                grid-template-columns: 1fr;
+            }
         }
+        
+        /* Added a specific breakpoint for the grid on small-ish screens */
+        @media (max-width: 500px) {
+             .project-grid {
+                grid-template-columns: 1fr;
+             }
+        }
+
 
         /* --- Background Canvas --- */
         #background-canvas {
@@ -595,7 +979,7 @@
         <div id="window-about" class="imgui-window"> 
             <div class="imgui-title-bar">
                 <span class="window-collapse-btn" title="Collapse">►</span>
-                <span>About Me</span>
+                <span class="window-title-text">About Me</span>
             </div>
             <div class="imgui-content">
                 <p style="font-weight: 700;">Akul Chordia</p>
@@ -604,7 +988,7 @@
                 <p>Email: akulchordia04@gmail.com</p>
                 <p>LinkedIn: <a href="https://linkedin.com/in/akul-chordia" target="_blank" rel="noopener noreferrer">linkedin.com/in/akul-chordia</a></p>
                 <p>GitHub: <a href="https://github.com/Akul-Chordia" target="_blank" rel="noopener noreferrer">github.com/Akul-Chordia</a></p>
-                <button id="resume-button" class="debug-widget" style="margin-top: 10px;">View Resume</button>
+                <button id="resume-button" class="debug-widget" style="margin-top: 10px;">View Resume [PDF]</button>
             </div>
             <div class="imgui-resize-handle"></div>
         </div>
@@ -613,7 +997,7 @@
         <div id="window-education" class="imgui-window"> 
             <div class="imgui-title-bar">
                 <span class="window-collapse-btn" title="Collapse">►</span>
-                <span>Education</span>
+                <span class="window-title-text">Education</span>
             </div>
             <div class="imgui-content">
                 <p style="font-weight: 700;">B.Tech Computer Science and Engineering</p>
@@ -621,14 +1005,14 @@
                 <p style="color: #999;">GPA: 8.24/10 (3.56/4)</p>
                 <p style="color: #999;">2022-2026</p>
                 <hr>
-                <p style="font-weight: 700;">Diploma, Data Science</p>
+                <p style="font-weight: 700;">Diploma, Data Science and Programming</p>
                 <p>Indian Institute of Technology, Madras</p>
                 <p style="color: #999;">2022-2024</p>
                 <hr>
                 <p style="font-weight: 700;">High School Diploma</p>
                 <p>Rockwoods High School, Udaipur</p>
                 <p style="color: #999;">91.4%</p>
-                <p style="color: #999;">2017-2022</p>
+                <p style="color: #999;">2018-2022</p>
             </div>
             <div class="imgui-resize-handle"></div>
         </div>
@@ -637,24 +1021,24 @@
         <div id="window-experience" class="imgui-window"> 
             <div class="imgui-title-bar">
                 <span class="window-collapse-btn" title="Collapse">►</span>
-                <span>Work Experience</span>
+                <span class="window-title-text">Work Experience</span>
             </div>
             <div class="imgui-content">
                 <details open> 
                     <summary><a href="https://easelearn.ai" target="_blank" rel="noopener noreferrer">EaseLearn AI - Head of AI</a> (July 2025 - Present)</summary>
                     <div class="details-content">
                         <ul>
-                            <li>Reduced jailbreak vulnerabilities by ~85% by engineering a multi-stage defense pipeline that utilized prompt analysis, fine-tuned guardrail models, and topic restriction to create an enterprise-grade secure Al infrastructure.</li>
-                            <li>Cut query latency 40% by implementing a scalable routing pipeline with asynchronous processing and optimized model selection logic; system has 20k+ users.</li>
+                            <li>Cut query latency 40% by implementing a scalable routing pipeline with asynchronous processing and optimized model selection logic; system has 25k+ users.</li>
+                            <li>Reduced jailbreak vulnerabilities by ~85% by engineering a multi-stage defense pipeline that utilized prompt analysis, fine-tuned guardrail models, and topic restriction to create an enterprise-grade secure AI infrastructure.</li>
                         </ul>
                     </div>
                 </details>
                 <details> 
-                    <summary><a href="https://www.niftyindices.com" target="_blank" rel="noopener noreferrer">NSE Indices Ltd. - Research Intern</a> (May 2025 - July 2025)</summary>
+                    <summary><a href="https://www.niftyindices.com" target="_blank" rel="noopener noreferrer">NSE Indices Ltd. - Quantitative Research Intern</a> (May 2025 - July 2025)</summary>
                     <div class="details-content">
                         <ul>
-                            <li>Benchmarked 12+ providers to identify white-space opportunities in index design; directly contributed to strategy for new product lines where NSE had no presence.</li>
-                            <li>Collaborated on algorithmic design, development and back testing of prototype indices, evaluating performance and market fit.</li>
+                            <li>Collaborated on algorithmic index design, development and back testing of prototype indices, evaluating performance and market fit.</li>
+                            <li>Benchmarked multiple providers to identify white-space opportunities in index design; directly contributed to strategy for new product lines where NSE had no presence.</li>
                             <li>Delivered final presentation on findings and recommendations to the CEO, VPs, and Director of NSE Indices, shaping senior leadership's roadmap for future index offerings.</li>
                         </ul>
                     </div>
@@ -676,41 +1060,55 @@
         <div id="window-projects" class="imgui-window"> 
             <div class="imgui-title-bar">
                 <span class="window-collapse-btn" title="Collapse">►</span>
-                <span>Projects</span>
+                <span class="window-title-text">Projects</span>
             </div>
             <div class="imgui-content">
                 <details open> 
                     <summary>OrderBook (C++)</summary>
                     <div class="details-content">
-                        <p>Built a high-performance multi-threaded order book supporting multiple order types with a custom price-time priority matching engine.</p>
-                        <p>Simulated realistic exchange microstructure by enabling concurrent agents, order flow dynamics, and strict FIFO queueing.</p>
-                        <p>Designed memory-safe, modular architecture (smart pointers, layered abstractions) for speed and extensibility.</p>
-                        <p class="project-link"><a href="https://github.com/Akul-Chordia/OrderBook" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
+                        <ul>
+                            <li>Built a high-performance agent based multi-threaded order book with OOPs based modular architecture.</li>
+                            <li>Simulated realistic exchange microstructure by enabling various concurrent agents including zero-intelligence agents, market makers, TWAP, VWAP agents and HFT agents with dynamic quoting and spread, inventory skew, and general risk management.</li>
+                            <li>Currently working on further academic research with a professor.</li>
+                        </ul>
+                        <div style="display:flex; gap:12px;">
+                            <p class="project-link">
+                                <a href="https://github.com/Akul-Chordia/OrderBook" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                            </p>
+                            <p class="project-link">
+                                <a href="https://drive.google.com/file/d/1EKnLIR5I_yJ3Pvp-evykr0w8DyEPqujV/view?usp=sharing" target="_blank" rel="noopener noreferrer">[whitepaper]</a>
+                            </p>
+                        </div>
                     </div>
                 </details>
                 <details> 
                     <summary>CPU Simulator (C++)</summary>
                     <div class="details-content">
-                        <p>Engineered a functional CPU from first principles using only AND/NOT gates; implemented custom assembly language.</p>
-                        <p>Implemented a comprehensive CLI with program loading, step-by-step debugging, register status monitoring, and execution control.</p>
-                        <p>Foundation for educational tools, hardware simulation, or low-level system research.</p>
+                        <ul>
+                            <li>Engineered a functional CPU from first principles using only AND/NOT gates; implemented custom assembly language.</li>
+                            <li>Implemented a comprehensive CLI with program loading, step-by-step debugging, register status monitoring, and execution control.</li>
+                            <li>Foundation for educational tools, hardware simulation, or low-level system research.</li>
+                        </ul>
                         <p class="project-link"><a href="https://github.com/Akul-Chordia/Virtual_CPU" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
                     </div>
                 </details>
                 <details> 
-                    <summary>Shopeasy (Flutter)</summary>
+                    <summary>Exon Detection (Python)</summary>
                     <div class="details-content">
-                        <p>Architected a low-latency event-driven pipeline using Cloud Firestore for instant real-time cart synchronization for a retail system.</p>
-                        <p>Achieved 70% higher checkout throughput and reduced manpower requirements by 80% during testing.</p>
-                        <p>Prototype demonstrates potential for scaling to full smart-retail infrastructure.</p>
-                        <p class="project-link"><a href="https://github.com/Akul-Chordia/shopeasy" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
+                        <ul>
+                            <li>Built several types of CNN optimization algorithms (PSO, PO, RIME, AVOA) for the detection and classification of Exon in human DNA.</li>
+                            <li>Currently in the process of getting a research paper approved under research guide.</li>
+                        </ul>
+                        <p class="project-link"><a href="https://drive.google.com/file/d/1Q-LIQA9YiPvn_X9bg_QgsygbGy8X8pYL/view?usp=sharing" target="_blank" rel="noopener noreferrer">[whitepaper]</a></p>
                     </div>
                 </details>
                 <details>
                     <summary>Narrative Game Engine (C++)</summary>
                     <div class="details-content">
-                        <p>Ported Windows-based OpenGL engine to macOS reworking windowing, input, and rendering backends.</p>
-                        <p>Project illustrates adaptability in systems-level engineering; foundation for future cross-platform engines.</p>
+                        <ul>
+                            <li>Ported Windows-based OpenGL engine to macOS reworking windowing, input, and rendering backends.</li>
+                            <li>Project illustrates adaptability in systems-level engineering; foundation for future cross-platform engines.</li>
+                        </ul>
                         <p class="project-link"><a href="https://github.com/Akul-Chordia/Narrative-Engine" target="_blank" rel="noopener noreferrer">[View on GitHub]</a></p>
                     </div>
                 </details>
@@ -718,13 +1116,15 @@
                     <summary>Other Projects</summary>
                     <div class="details-content">
                         <ul class="other-projects-list">
-                            <li><a href="https://github.com/Akul-Chordia/options_pricing" target="_blank" rel="noopener noreferrer">Options Pricing (C++): Black-Scholes, Binomial models, Monte Carlo.</a></li>
+                            <li><a href="https://github.com/Akul-Chordia/options_pricing" target="_blank" rel="noopener noreferrer">Options Pricing Black-Scholes, Binomial models, Monte Carlo (C++).</a></li>
                             <li><a href="https://github.com/Akul-Chordia/option_expiration_graph" target="_blank" rel="noopener noreferrer">Robinhood style option payoff graph (Python).</a></li>
                             <li><a href="https://github.com/Akul-Chordia/auction_pricing" target="_blank" rel="noopener noreferrer">Auction-style price discovery simulation (Python) (Maximizing fills).</a></li>
                             <li><a href="https://github.com/Akul-Chordia/Statistical_Arbitrage" target="_blank" rel="noopener noreferrer">Statistical Arbitrage - Pairs Trading Strategy (Python).</a></li>
+                            <li><a href="https://github.com/Akul-Chordia/shopeasy" target="_blank" rel="noopener noreferrer">Shopeasy - Real-time cart retail system (Flutter).</a></li>
                             <li><a href="https://github.com/Akul-Chordia/bettr" target="_blank" rel="noopener noreferrer">Bettr-custom contract betting (Django).</a></li>
                             <li><a href="https://github.com/Akul-Chordia/FOCUS" target="_blank" rel="noopener noreferrer">FOCUS - LLM based ADHD diagnosis (Flask).</a></li>
                         </ul>
+                        <!-- The new portfolio button is now in its own window -->
                     </div>
                 </details>
             </div>
@@ -735,7 +1135,7 @@
         <div id="window-achievements" class="imgui-window"> 
             <div class="imgui-title-bar">
                 <span class="window-collapse-btn" title="Collapse">►</span>
-                <span>Achievements</span>
+                <span class="window-title-text">Achievements</span>
             </div>
             <div class="imgui-content">
                 <p style="font-weight: 700;">Hackathons</p>
@@ -760,51 +1160,57 @@
         <div id="window-skills" class="imgui-window"> 
             <div class="imgui-title-bar">
                 <span class="window-collapse-btn" title="Collapse">►</span>
-                <span>Technical Skills</span>
+                <span class="window-title-text">Technical Skills</span>
             </div>
-            <div class="imgui-content skills-tree">
-                <details open>
-                    <summary>Languages</summary>
-                    <div class="details-content">
-                        <p>C++, Python, R, C, SQL, Java</p>
-                    </div>
-                </details>
-                <details open>
-                    <summary>Academic</summary>
-                    <div class="details-content">
-                        <p>Operating Systems, Compiler Design, Data Structures & Algorithms, DBMS, Financial Analytics</p>
-                    </div>
-                </details>
-                <details open>
-                    <summary>Systems & Tools</summary>
-                    <div class="details-content">
-                        <p>Git, Linux, Unix, Streamlit, Tableau, PowerPoint, Excel, AWS, Shell Scripting, VBA</p>
-                    </div>
-                </details>
-                <details open> 
-                    <summary>Finance and Data</summary>
-                    <div class="details-content">
-                        <p>Options Pricing, Monte Carlo Simulation, Statistical Arbitrage, Time Series Analysis, Portfolio Optimization</p>
-                    </div>
-                </details> 
-                <details open>
-                    <summary>Other</summary>
-                    <div class="details-content">
-                        <p>API Integration, Web Scraping, RESTful Systems, Low-Latency Data Pipelines</p>
-                    </div>
-                </details>
+            <div class="imgui-content">
+                <p style="font-weight: 700;">Languages</p>
+                <ul>
+                    <li>C++, Python, R, C, SQL, Java</li>
+                </ul>
+                <hr>
+                <p style="font-weight: 700;">Academic</p>
+                <ul>
+                    <li>Operating Systems, Compiler Design, Data Structures & Algorithms, DBMS, Financial Analytics</li>
+                </ul>
+                <hr>
+                <p style="font-weight: 700;">Systems & Tools</p>
+                 <ul>
+                    <li>Git, Linux / Unix, Streamlit, Tableau, PowerPoint / Excel / VBA, AWS, Shell Scripting</li>
+                </ul>
+                <hr>
+                <p style="font-weight: 700;">Finance and Data</p>
+                <ul>
+                    <li>Options Pricing, Monte Carlo Simulation, Statistical Arbitrage, Time Series Analysis, Portfolio Optimization</li>
+                </ul>
+                <hr>
+                <p style="font-weight: 700;">Other</p>
+                <ul>
+                    <li>API Integration, Web Scraping, RESTful Systems, Low-Latency Data Pipelines</li>
+                </ul>
             </div>
             <div class="imgui-resize-handle"></div>
         </div>
         
+        <!-- NEW: Window 8: Portfolio Button -->
+        <div id="window-portfolio-btn" class="imgui-window"> 
+            <div class="imgui-title-bar">
+                <span class="window-collapse-btn" title="Collapse">►</span>
+                <span class="window-title-text">Portfolio</span>
+            </div>
+            <div class="imgui-content">
+                <button id="portfolio-button" class="debug-widget" style="margin: 0;">View Full Portfolio</button>
+            </div>
+            <!-- UPDATED: Added resize handle -->
+            <div class="imgui-resize-handle"></div>
+        </div>
 
     </div> <!-- End of #window-container -->
 
     <!-- Window 7: Debug Window -->
-    <div id="debug-window" class="imgui-window active" style="position: fixed; top: 20px; right: 20px; width: 280px; height: 310px; z-index: 2000;">
+    <div id="debug-window" class="imgui-window active" style="position: fixed; top: 20px; right: 20px; width: 280px; height: 300px; z-index: 2000;">
         <div class="imgui-title-bar">
             <span class="window-collapse-btn" title="Collapse">►</span>
-            <span>Debug Window</span>
+            <span class="window-title-text">Debug Window</span>
         </div>
         <div class="imgui-content">
             <p id="app-stats">App: ...</p>
@@ -825,11 +1231,210 @@
             </div>
             <hr>
             <!-- Scale Slider -->
-            <label for="font-slider" class="debug-widget">Font Size: <span id="font-value">16</span>px</label>
-            <input type="range" min="10" max="25" value="16" step="1" id="font-slider">
+            <label for="font-slider" class="debug-widget">Font Size: <span id="font-value">17</span>px</label>
+            <input type="range" min="10" max="25" value="17" step="1" id="font-slider">
 
             <!-- Reset Layout Button -->
             <button id="reset-layout-button" class="debug-widget" style="margin-top: 10px;">Reset Layout</button>
+        </div>
+    </div>
+
+    <!-- 
+    =================================================
+    --- NEW: Portfolio Overlay HTML Structure ---
+    =================================================
+    -->
+    <div id="portfolio-overlay">
+        <div id="portfolio-card">
+            <span id="portfolio-close-btn">&times;</span>
+            <div id="portfolio-scroller">
+                
+                <!-- Slide 1: OrderBook -->
+                <div class="project-slide" id="slide-1">
+                    <h2>OrderBook (C++): A High-Performance Market Simulation</h2>
+                    <div class="slide-content">
+                        <p>This isn't just an order book; it's a complete, multi-threaded market ecosystem built from the ground up in modern C++. It simulates the complex, high-speed dynamics of a real financial exchange, proving out advanced concepts in concurrency, systems design, and quantitative strategy.</p>
+                        <ul>
+                            <li><strong>Advanced Matching Engine:</strong> A high-speed, single-writer matching engine that processes orders with zero lock contention, ensuring maximum throughput.</li>
+                            <li><strong>Multi-Threaded Agent Ecosystem:</strong> A diverse set of AI agents (HFT, Momentum, TWAP, Market Maker, Retail) that trade concurrently, each with unique strategies, risk management, and inventory skew logic.</li>
+                            <li><strong>Lock-Free Concurrency:</strong> Implements a sophisticated, lock-free double-buffering pattern to feed market data to the GUI, allowing the simulation and visualization to run in parallel without ever blocking each other.</li>
+                            <li><strong>Realistic Microstructure:</strong> Agents simulate real-world HFT strategies, like dynamic spread quoting based on volatility, creating a living, breathing, and realistic market environment.</li>
+                        </ul>
+                         <p class="project-link" style="font-size: 1rem; display: inline-block; margin-right: 15px;">
+                            <!-- USER REQUEST 2: Fixed broken href -->
+                            <a href="https://github.com/Akul-Chordia/OrderBook" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                        </p>
+                         <p class="project-link" style="font-size: 1rem; display: inline-block;">
+                            <!-- USER REQUEST 2: Fixed broken href -->
+                            <a href="https://drive.google.com/file/d/1EKnLIR5I_yJ3Pvp-evykr0w8DyEPqujV/view?usp=sharing" target="_blank" rel="noopener noreferrer">[Read Whitepaper]</a>
+                        </p>
+                    </div>
+                    <div class="slide-media">
+                        <!-- USER REQUEST 2: Replaced broken img src with a placeholder -->
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=OrderBook+Screenshot" alt="OrderBook Project Screenshot">
+                        <!-- USER REQUEST 2: Fixed broken video poster URL -->
+                        <video controls poster="https://placehold.co/600x400/111111/5E98D9?text=OrderBook+Agent+Simulation">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+
+
+                <!-- Slide 2: CPU Simulator -->
+                <div class="project-slide" id="slide-2">
+                    <h2>CPU Simulator (C++)</h2>
+                    <div class="slide-content">
+                        <p>Engineered a functional CPU from first principles using only AND/NOT gates and a custom-implemented assembly language.</p>
+                        <ul>
+                            <li>Features a comprehensive CLI for program loading.</li>
+                            <li>Includes step-by-step debugging, register status monitoring, and full execution control.</li>
+                            <li>Provides a solid foundation for educational tools, hardware simulation, or low-level system research.</li>
+                        </ul>
+                        <p class="project-link" style="font-size: 1rem;">
+                            <a href="https://github.com/Akul-Chordia/Virtual_CPU" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                        </p>
+                    </div>
+                    <div class="slide-media">
+                        <!-- Replace with your actual image -->
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=CPU+Simulator+Demo" alt="CPU Simulator Project Screenshot">
+                    </div>
+                </div>
+                
+                <!-- Slide 3: Exon Detection -->
+                <div class="project-slide" id="slide-3">
+                    <h2>Exon Detection (Python)</h2>
+                    <div class="slide-content">
+                        <p>Built and optimized several types of CNN algorithms (PSO, PO, RIME, AVOA) for the detection and classification of Exon segments in human DNA.</p>
+                        <ul>
+                            <li>Part of an ongoing research project.</li>
+                            <li>Currently in the process of getting a research paper approved under a research guide.</li>
+                        </ul>
+                         <p class="project-link" style="font-size: 1rem;">
+                            <a href="https://drive.google.com/file/d/1Q-LIQA9YiPvn_X9bg_QgsygbGy8X8pYL/view?usp=sharing" target="_blank" rel="noopener noreferrer">[Read Whitepaper]</a>
+                        </p>
+                    </div>
+                    <div class="slide-media">
+                        <!-- Replace with your actual image -->
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=DNA+Sequence+Analysis" alt="Exon Detection Project">
+                    </div>
+                </div>
+                
+                <!-- USER REQUEST 3: Added Slide 4 -->
+                <!-- Slide 4: Narrative Game Engine -->
+                <div class="project-slide" id="slide-4">
+                    <h2>Narrative Game Engine (C++)</h2>
+                    <div class="slide-content">
+                        <p>A personal project to understand cross-platform development by porting a Windows-based OpenGL engine to macOS.</p>
+                        <ul>
+                            <li>Reworked the entire windowing, input, and rendering backends to be platform-agnostic.</li>
+                            <li>Demonstrates adaptability in systems-level engineering and low-level graphics APIs.</li>
+                            <li>Serves as a foundation for future cross-platform game engine development.</li>
+                        </ul>
+                        <p class="project-link" style="font-size: 1rem;">
+                            <a href="https://github.com/Akul-Chordia/Narrative-Engine" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                        </p>
+                    </div>
+                    <div class="slide-media">
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=Game+Engine+Code" alt="Narrative Game Engine">
+                    </div>
+                </div>
+                
+                <!-- USER REQUEST 3: Added Slide 5 (Grid) -->
+                <!-- Slide 5: Quantitative Finance Toolkit -->
+                <div class="project-slide" id="slide-5">
+                    <h2>Quantitative Finance Toolkit (C++ & Python)</h2>
+                    <div class="slide-content">
+                        <p>A collection of high-performance models and simulations for financial derivatives and market analysis.</p>
+                        <div class="project-grid">
+                            <div class="project-grid-item">
+                                <h4>Options Pricing</h4>
+                                <p>Black-Scholes, Binomial, and Monte Carlo models in C++.</p>
+                                <a href="https://github.com/Akul-Chordia/options_pricing" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                            </div>
+                            <div class="project-grid-item">
+                                <h4>Option Payoff Graph</h4>
+                                <p>Robinhood-style payoff visualizer built in Python.</p>
+                                <a href="https://github.com/Akul-Chordia/option_expiration_graph" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                            </div>
+                            <div class="project-grid-item">
+                                <h4>Auction-Style Pricing</h4>
+                                <p>Simulates price discovery and maximizing fills in an auction.</p>
+                                <a href="https://github.com/Akul-Chordia/auction_pricing" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                            </div>
+                            <div class="project-grid-item">
+                                <h4>Statistical Arbitrage</h4>
+                                <p>A classic pairs trading strategy implementation in Python.</p>
+                                <a href="https://github.com/Akul-Chordia/Statistical_Arbitrage" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slide-media">
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=Quant+Finance+Models" alt="Quantitative Finance Toolkit">
+                    </div>
+                </div>
+                
+                <!-- USER REQUEST 3: Added Slide 6 -->
+                <!-- Slide 6: Shopeasy -->
+                <div class="project-slide" id="slide-6">
+                    <h2>Shopeasy (Flutter)</h2>
+                    <div class="slide-content">
+                        <p>A real-time, collaborative retail cart system built with Flutter for cross-platform mobile deployment.</p>
+                        <ul>
+                            <li>Allows multiple users to add items to a shared cart in real-time.</li>
+                            <li>Uses a cloud database (like Firebase) to sync state across devices instantly.</li>
+                            <li>Designed for a seamless and modern in-store shopping experience.</li>
+                        </ul>
+                        <p class="project-link" style="font-size: 1rem;">
+                            <a href="https://github.com/Akul-Chordia/shopeasy" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                        </p>
+                    </div>
+                    <div class="slide-media">
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=Shopeasy+App+Screen+1" alt="Shopeasy App Screenshot 1">
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=Shopeasy+App+Screen+2" alt="Shopeasy App Screenshot 2">
+                    </div>
+                </div>
+
+                <!-- USER REQUEST 3: Added Slide 7 -->
+                <!-- Slide 7: FOCUS -->
+                <div class="project-slide" id="slide-7">
+                    <h2>FOCUS (Flask)</h2>
+                    <div class="slide-content">
+                        <p>An LLM-based web application for the preliminary diagnosis of ADHD, developed for the Electra 2024 hackathon (Winner).</p>
+                        <ul>
+                            <li>Utilizes a fine-tuned large language model to analyze user-provided inputs.</li>
+                            <li>Built with a lightweight Flask backend to serve the model and a simple frontend for interaction.</li>
+                            <li>Demonstrates the application of modern AI techniques to solve real-world healthcare challenges.</li>
+                        </ul>
+                        <p class="project-link" style="font-size: 1rem;">
+                            <a href="https://github.com/Akul-Chordia/FOCUS" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                        </p>
+                    </div>
+                    <div class="slide-media">
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=FOCUS+Web+App" alt="FOCUS App Screenshot">
+                    </div>
+                </div>
+                
+                <!-- USER REQUEST 3: Added Slide 8 -->
+                <!-- Slide 8: Bettr -->
+                <div class="project-slide" id="slide-8">
+                    <h2>Bettr (Django)</h2>
+                    <div class="slide-content">
+                        <p>A web platform for creating and managing custom contract betting among users, built with Django.</p>
+                        <ul>
+                            <li>Leverages the Django framework for rapid development, including user authentication, database management, and a robust backend.</li>
+                            <li>Allows users to define the terms of a bet, set stakes, and resolve outcomes.</li>
+                            <li>Explores concepts of peer-to-peer agreements and web-based financial interactions.</li>
+                        </ul>
+                        <p class="project-link" style="font-size: 1rem;">
+                            <a href="https://github.com/Akul-Chordia/bettr" target="_blank" rel="noopener noreferrer">[View on GitHub]</a>
+                        </p>
+                    </div>
+                    <div class="slide-media">
+                        <img src="https://placehold.co/600x400/111111/5E98D9?text=Bettr+Web+App" alt="Bettr App Screenshot">
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -867,11 +1472,11 @@
             const windowContainer = document.getElementById('window-container');
             const fontSlider = document.getElementById('font-slider');
             const fontValue = document.getElementById('font-value');
-            let baseFontSize = 16;
+            let baseFontSize = 17;
 
             // --- Auto-set initial font size ---
             if (window.innerWidth > 1920) {
-                baseFontSize = 18;
+                baseFontSize = 19;
             } else if (window.innerWidth <= 1440 && window.innerWidth > 800) {
                 baseFontSize = 14;
             }
@@ -918,7 +1523,9 @@
                     'window-experience':  { top: vh * 0.02, left: vw * 0.20, width: vw * 0.35, height: vh * 0.45, z: 103 },
                     'window-projects':    { top: vh * 0.50, left: vw * 0.21, width: vw * 0.40, height: vh * 0.48, z: 104 }, // Overlaps
                     'window-achievements':{ top: vh * 0.02, left: vw * 0.56, width: vw * 0.26, height: vh * 0.35, z: 105 }, // Overlaps
-                    'window-skills':      { top: vh * 0.40, left: vw * 0.63, width: vw * 0.35, height: vh * 0.45, z: 106 }  // Overlaps
+                    'window-skills':      { top: vh * 0.40, left: vw * 0.63, width: vw * 0.35, height: vh * 0.45, z: 106 },  // Overlaps
+                    /* NEW: Layout for portfolio button window */
+                    'window-portfolio-btn': { top: vh * 0.78, left: vw * 0.01, width: vw * 0.18, height: vh * 0.18, z: 102 }
                 };
 
                 for (const id in layouts) {
@@ -976,6 +1583,8 @@
                         // Don't drag on mobile or when clicking on links or other widgets
                         if (window.innerWidth <= 800 || e.target.closest('button, input, a, summary, .window-collapse-btn')) return;
                         
+                        // UPDATED: Don't drag debug 
+                        // Portfolio button window is now resizable, so it should be draggable
                         if (windowElement.id === 'debug-window') return;
                         
                         e.preventDefault();
@@ -1053,7 +1662,7 @@
                         if (isCollapsed) {
                             collapseBtn.title = 'Expand';
                         } else {
-                            collapseBtn.title = 'Collapse';
+                            collapseBtn.title = 'Expand';
                             // When expanding, bring to front
                             bringToFront();
                         }
@@ -1134,7 +1743,13 @@
                     let maxOriginalZ = -1;
                     let newTopWindow = null;
                     initialWindowStyles.forEach((style, win) => {
-                        const z = parseInt(win.style.zIndex, 10);
+                        // Need to parse z-index from the style string
+                        let z = 100; // default
+                        if(style) {
+                             const zMatch = style.match(/z-index:\s*(\d+)/);
+                             if(zMatch) z = parseInt(zMatch[1], 10);
+                        }
+                       
                         if(z > maxOriginalZ) {
                             maxOriginalZ = z;
                             newTopWindow = win;
@@ -1155,11 +1770,7 @@
                     fontValue.textContent = baseFontSize;
                     document.documentElement.style.fontSize = baseFontSize + 'px';
                     
-                    // 5. Reset theme (REMOVED)
-                    // document.getElementById('theme-dark').checked = true;
-                    // document.body.classList.remove('light-mode');
-
-                    // 6. Reset pan
+                    // 5. Reset pan
                     panX = 0;
                     panY = 0;
                     windowContainer.style.transform = `translate(0, 0)`;
@@ -1208,7 +1819,6 @@
             resizeCanvas(); // Initial call
 
             // --- Animation Loop ---
-            let lastTime = performance.now();
             let frameCount = 0;
             let fps = 0;
             let lastFpsUpdate = performance.now();
@@ -1331,7 +1941,8 @@
                     width: 100%;
                     margin: 10px 0; 
                 }
-                #debug-button, #resume-button, #reset-layout-button { 
+                /* UPDATED: Removed #debug-button */
+                #resume-button, #reset-layout-button, #portfolio-button { 
                     padding: 8px 14px; 
                     background-color: rgb(41, 74, 122);
                     border: 1px solid rgb(41, 74, 122);
@@ -1344,17 +1955,20 @@
                     width: 100%;
                     transition: background-color 0.2s, border-color 0.2s, color 0.2s;
                 }
-                #debug-button:hover, #resume-button:hover, #reset-layout-button:hover { 
+                /* UPDATED: Removed #debug-button */
+                #resume-button:hover, #reset-layout-button:hover, #portfolio-button:hover { 
                     background-color: rgb(56, 123, 203);
                     border-color: rgb(56, 123, 203);
                 }
-                #debug-button:active, #resume-button:active, #reset-layout-button:active { 
+                /* UPDATED: Removed #debug-button */
+                #resume-button:active, #reset-layout-button:active, #portfolio-button:active { 
                     background-color: rgb(32, 58, 89);
                     border-color: rgb(32, 58, 89);
                 }
                 
                 /* --- Custom Slider --- */
-                #debug-slider, #font-slider {
+                /* UPDATED: Removed #debug-slider */
+                #font-slider {
                     -webkit-appearance: none;
                     appearance: none;
                     width: 100%;
@@ -1364,7 +1978,8 @@
                     border: 1px solid rgb(17, 17, 17);
                     transition: background-color 0.2s, border-color 0.2s;
                 }
-                #debug-slider::-webkit-slider-thumb, #font-slider::-webkit-slider-thumb {
+                /* UPDATED: Removed #debug-slider */
+                #font-slider::-webkit-slider-thumb {
                     -webkit-appearance: none;
                     appearance: none;
                     width: 20px; 
@@ -1374,10 +1989,12 @@
                     cursor: grab;
                     transition: background-color 0.2s, border-color 0.2s;
                 }
-                #debug-slider::-webkit-slider-thumb:hover, #font-slider::-webkit-slider-thumb:hover {
+                /* UPDATED: Removed #debug-slider */
+                #font-slider::-webkit-slider-thumb:hover {
                     background: rgb(56, 123, 203);
                 }
-                #debug-slider::-moz-range-thumb, #font-slider::-moz-range-thumb {
+                /* UPDATED: Removed #debug-slider */
+                #font-slider::-moz-range-thumb {
                     width: 20px; 
                     height: 20px; 
                     background: rgb(41, 74, 122);
@@ -1387,6 +2004,281 @@
                 }
             `;
             document.head.appendChild(styleSheet);
+
+
+            // --- NEW: Portfolio Overlay Logic ---
+
+            // 1. Get DOM elements for overlay
+            const portfolioBtn = document.getElementById('portfolio-button'); // UPDATED: Just get the button
+            const overlay = document.getElementById('portfolio-overlay');
+            const closeBtn = document.getElementById('portfolio-close-btn');
+            const portfolioCard = document.getElementById('portfolio-card'); // NEW: Get the card for animation
+
+            // 2. Add event listeners
+            if (overlay && portfolioBtn && closeBtn && portfolioCard) { // UPDATED: Check for card
+                // Open overlay
+                portfolioBtn.addEventListener('click', () => {
+                    overlay.classList.remove('hiding'); // NEW: Remove hiding class if it's there
+                    overlay.classList.add('active');
+                });
+
+                // NEW: Function to close overlay
+                function closeOverlay() {
+                    overlay.classList.add('hiding');
+                }
+
+                // Close overlay with 'X' button
+                closeBtn.addEventListener('click', closeOverlay); // UPDATED
+
+                // Close overlay by clicking on the backdrop
+                overlay.addEventListener('click', (e) => { // UPDATED
+                    // Only close if the click is on the overlay itself, not the card
+                    if (e.target === overlay) {
+                        closeOverlay();
+                    }
+                });
+                
+                // NEW: Listen for animation end to fully hide
+                portfolioCard.addEventListener('animationend', (e) => {
+                    if (e.animationName === 'popOut') {
+                        overlay.classList.remove('active');
+                        overlay.classList.remove('hiding');
+                    }
+                });
+            }
+            
+            // --- NEW: Portfolio Fan Interaction Logic ---
+            function initPortfolioFan() {
+                // This logic is only for the desktop fan view
+                if (window.innerWidth <= 800) return;
+
+                const scroller = document.getElementById('portfolio-scroller');
+                const slides = Array.from(scroller.querySelectorAll('.project-slide'));
+                const numSlides = slides.length;
+                
+                if (numSlides === 0) return;
+
+                // --- STATE VARIABLES ---
+                let activeIndex = -1;
+                
+                // NEW: Pixel accumulator for scrolling
+                let scrollAccumulator = 0;
+                const scrollThresholdPx = 250; // Must swipe 250px to trigger
+                
+                // NEW: State for directional hover
+                let previousHoveredIndex = -1;
+                
+                // NEW: Store entry point for the *current* hover
+                let hoverEntry = { index: -1, x: 0, y: 0 };
+                const activationThresholdPx = 40; // USER REQUEST: 40px threshold
+
+                // 1. Define the default "fan" transforms (copied from CSS)
+                const defaultTransforms = [
+                    { transform: 'translateX(-35rem) translateY(9rem) rotate(-24deg) scale(0.7)', zIndex: 1 },
+                    { transform: 'translateX(-25rem) translateY(5rem) rotate(-16deg) scale(0.8)', zIndex: 2 },
+                    { transform: 'translateX(-15rem) translateY(2rem) rotate(-8deg) scale(0.9)', zIndex: 3 },
+                    { transform: 'translateX(-5rem) translateY(0rem) rotate(-2deg) scale(1)', zIndex: 4 },
+                    { transform: 'translateX(5rem) translateY(0rem) rotate(2deg) scale(1)', zIndex: 4 },
+                    { transform: 'translateX(15rem) translateY(2rem) rotate(8deg) scale(0.9)', zIndex: 3 },
+                    { transform: 'translateX(25rem) translateY(5rem) rotate(16deg) scale(0.8)', zIndex: 2 },
+                    { transform: 'translateX(35rem) translateY(9rem) rotate(24deg) scale(0.7)', zIndex: 1 }
+                ];
+
+                // 2. Helper function to apply a set of transforms
+                function applyTransforms(transformSet) {
+                    slides.forEach((slide, i) => {
+                        // Failsafe in case transformSet is shorter
+                        if (!transformSet[i]) return; 
+                        
+                        slide.style.transform = transformSet[i].transform;
+                        slide.style.zIndex = transformSet[i].zIndex;
+                    });
+                }
+
+                // 3. NEW: Helper function to activate a card
+                function activateCard(index) {
+                    if (index === activeIndex) return; // Already active
+                    
+                    // Clamp index
+                    index = Math.max(0, Math.min(numSlides - 1, index));
+                    
+                    activeIndex = index;
+
+                    const hoverTransforms = [];
+                    
+                    // Define the "move aside" parameters
+                    const xBase = 30; // Base separation from center (rem)
+                    const xPer = 10;  // Additional separation per card (rem)
+                    const yPer = 3;   // Y offset per card (rem)
+                    const rotPer = 5; // Rotation per card (deg)
+                    const scaleBase = 0.8; // Base scale of "aside" cards
+                    
+                    slides.forEach((s, i) => {
+                        if (i === activeIndex) {
+                            // FOCUSED card
+                            hoverTransforms.push({
+                                transform: 'translateY(-2.5rem) scale(1.1)',
+                                zIndex: 100
+                            });
+                        } else {
+                            // "ASIDE" card
+                            const distance = i - activeIndex;
+                            const sign = Math.sign(distance); // -1 for left, 1 for right
+                            
+                            const x = (sign * xBase) + (distance * xPer);
+                            const y = Math.abs(distance) * yPer;
+                            const rot = (sign * 10) + (distance * rotPer); // Base rotation + per-card rotation
+                            const scale = Math.pow(scaleBase, Math.abs(distance));
+                            const z = numSlides - Math.abs(distance);
+                            
+                            hoverTransforms.push({
+                                transform: `translateX(${x}rem) translateY(${y}rem) rotate(${rot}deg) scale(${scale})`,
+                                zIndex: z
+                            });
+                        }
+                    });
+                    
+                    applyTransforms(hoverTransforms);
+                }
+
+                // 4. NEW: Helper function to reset all cards
+                function deactivateAll() {
+                    activeIndex = -1; // Reset active index
+                    applyTransforms(defaultTransforms);
+                }
+
+                // 5. Set the default state on load
+                applyTransforms(defaultTransforms);
+
+
+                // 6. NEW: Replace all mouseenter/mouseleave with a single mousemove
+                scroller.addEventListener('mousemove', (e) => {
+                    const hoveredSlide = e.target.closest('.project-slide');
+                    const currentHoveredIndex = hoveredSlide ? slides.indexOf(hoveredSlide) : -1;
+                    
+                    if (currentHoveredIndex === -1) {
+                        // On background
+                        previousHoveredIndex = -1;
+                        hoverEntry = { index: -1, x: 0, y: 0 };
+                        return;
+                    }
+
+                    if (currentHoveredIndex === activeIndex) {
+                        // On active card
+                        previousHoveredIndex = currentHoveredIndex;
+                        hoverEntry = { index: -1, x: 0, y: 0 }; // Reset hover entry
+                        return;
+                    }
+
+                    // --- We are on an INACTIVE card ---
+
+                    if (currentHoveredIndex !== hoverEntry.index) {
+                        // This is the FIRST time we're on this *new* inactive card
+                        previousHoveredIndex = hoverEntry.index; // Store the card we *just* left
+                        hoverEntry = { index: currentHoveredIndex, x: e.clientX, y: e.clientY };
+                        return; // Wait for 20px movement
+                    }
+
+                    // --- We are STILL on the SAME inactive card ---
+                    
+                    // NEW: Calculate directional distance
+                    const deltaX = e.clientX - hoverEntry.x;
+                    const prevActiveIndex = activeIndex; // Get the *current* active card
+                    
+                    let directionalDist = 0;
+                    
+                    if (prevActiveIndex === -1) {
+                        // No card active, so any movement counts. Use total distance.
+                        directionalDist = Math.sqrt(Math.pow(e.clientX - hoverEntry.x, 2) + Math.pow(e.clientY - hoverEntry.y, 2));
+                    } else if (currentHoveredIndex > prevActiveIndex) {
+                        // We are on a card to the RIGHT. Only count positive X movement.
+                        if (deltaX > 0) directionalDist = deltaX;
+                    } else if (currentHoveredIndex < prevActiveIndex) {
+                        // We are on a card to the LEFT. Only count negative X movement.
+                        if (deltaX < 0) directionalDist = Math.abs(deltaX);
+                    }
+                    
+                    // Also need to handle the case of moving *off* the active card
+                    if (previousHoveredIndex === prevActiveIndex) {
+                        // We just left the active card. Any 20px move counts.
+                        directionalDist = Math.sqrt(Math.pow(e.clientX - hoverEntry.x, 2) + Math.pow(e.clientY - hoverEntry.y, 2));
+                    }
+
+
+                    if (directionalDist > activationThresholdPx) {
+                        // --- We've moved 20px IN THE RIGHT DIRECTION! ---
+                        
+                        // Now, we can run the original logic
+                        if (prevActiveIndex === -1) {
+                            activateCard(currentHoveredIndex);
+                        } else if (previousHoveredIndex === prevActiveIndex) {
+                            activateCard(currentHoveredIndex);
+                        } else if (previousHoveredIndex !== -1) {
+                            const distPrev = Math.abs(previousHoveredIndex - prevActiveIndex);
+                            const distCurr = Math.abs(currentHoveredIndex - prevActiveIndex);
+
+                            if (distCurr > distPrev) {
+                                activateCard(currentHoveredIndex);
+                            }
+                        } else if (previousHoveredIndex === -1) {
+                             activateCard(currentHoveredIndex);
+                        }
+                        
+                        // Reset hover entry so this logic block doesn't re-fire
+                        // We'll set a new entry point on the *next* mousemove frame
+                        hoverEntry = { index: -1, x: 0, y: 0 };
+                    }
+                });
+                
+                // 7. NEW: Add mouseleave to scroller to reset
+                scroller.addEventListener('mouseleave', () => {
+                    deactivateAll();
+                    previousHoveredIndex = -1; // Reset state
+                    hoverEntry = { index: -1, x: 0, y: 0 }; // Reset state
+                });
+
+
+                // 8. NEW: Listen for scroll/wheel events (Scroll Navigation)
+                scroller.addEventListener('wheel', (e) => {
+                    e.preventDefault(); // Stop page from scrolling
+                    
+                    // Only act on horizontal scroll
+                    if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+                        return; // It's a vertical scroll, ignore it
+                    }
+
+                    // Add this scroll's pixels to the accumulator
+                    scrollAccumulator += e.deltaX;
+                    
+                    let newIndex = activeIndex;
+
+                    // Check if accumulator passes the positive (right) threshold
+                    if (scrollAccumulator > scrollThresholdPx) {
+                        if (activeIndex === -1) {
+                            // If no card is active, start from the middle
+                            newIndex = Math.floor(numSlides / 2);
+                        } else {
+                            newIndex = activeIndex + 1;
+                        }
+                        activateCard(newIndex);
+                        scrollAccumulator = 0; // Reset
+                        
+                    // Check if accumulator passes the negative (left) threshold
+                    } else if (scrollAccumulator < -scrollThresholdPx) {
+                         if (activeIndex === -1) {
+                            // If no card is active, start from the middle
+                            newIndex = Math.floor(numSlides / 2) - 1;
+                         } else {
+                            newIndex = activeIndex - 1;
+                         }
+                        activateCard(newIndex);
+                        scrollAccumulator = 0; // Reset
+                    }
+                });
+
+            }
+            initPortfolioFan(); // Run the new function
+
         });
     </script>
 
